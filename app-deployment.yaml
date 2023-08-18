@@ -26,8 +26,8 @@ spec:
         io.kompose.service: app
     spec:
       containers:
-        - image: app-prod
-          name: app-prod
+        - image: kenphetmany/react-prod:latest
+          name: react-app
           ports:
             - containerPort: 80
               protocol: TCP
