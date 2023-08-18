@@ -1,17 +1,39 @@
-FROM node:18.12.1-buster-slim AS builder
-
+FROM node:16-alpine AS development
+ENV NODE_ENV development
+# Add a work directory
 WORKDIR /app
-COPY package.json package-lock.json ./
-COPY public/ public/
-COPY src/ src/
-RUN npm ci
-RUN npm run build
+# Cache and Install dependencies
+COPY package.json .
+COPY yarn.lock .
+RUN yarn install
+# Copy app files
+COPY . .
+# Expose port
+EXPOSE 3000
+# Start the app
+CMD [ "yarn", "start" ]
 
-FROM nginx:1.23.2-alpine
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+FROM node:16-alpine AS builder
+ENV NODE_ENV production
+# Add a work directory
+WORKDIR /app
+# Cache and Install dependencies
+COPY package.json .
+COPY yarn.lock .
+RUN yarn install --production
+# Copy app files
+COPY . .
+# Build the app
+RUN yarn build
+
+# Bundle static assets with nginx
+FROM nginx:latest as production
+ENV NODE_ENV production
+# Copy built assets from builder
 COPY --from=builder /app/build /usr/share/nginx/html
-RUN touch /var/run/nginx.pid
-RUN chown -R nginx:nginx /var/run/nginx.pid /usr/share/nginx/html /var/cache/nginx /var/log/nginx /etc/nginx/conf.d
-USER nginx
-EXPOSE 8080
+# Add your nginx.conf
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Expose port
+EXPOSE 80
+# Start nginx
 CMD ["nginx", "-g", "daemon off;"]
