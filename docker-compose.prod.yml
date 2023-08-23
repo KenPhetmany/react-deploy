@@ -1,11 +1,8 @@
-version: "3.8"
-
 services:
   app:
-    container_name: app-prod
-    image: kenphetmany/react-prod:latest
-    ports:
-      - "80"
+    image: public.ecr.aws/q7m2t9t6/testing
     build:
       context: .
-      target: production
+      target: prod
+    ports:
+      - 8080:8080
