@@ -1,14 +1,29 @@
 version: 0.2
+env:
+  variables:
+    COMMIT_HASH: $(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+    IMAGE_TAG: $(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')
+    IMAGE_REPO: public.ecr.aws/q7m2t9t6/testing
+    IMAGE_URI: public.ecr.aws/q7m2t9t6
+    VERSION: V7
+    REGION : us-east-1
+    USERNAME: AWS
+    DOCKER_USERNAME: 'kenphetmany'
+    DOCKER_PASSWORD: '*8QGDHwBe$6nH3'
 
 phases:
   pre_build:
     commands:
-      - echo Logging in to Amazon ECR...
-      - aws --version
-      - aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/q7m2t9t6
-      - REPOSITORY_URI=public.ecr.aws/q7m2t9t6/testing
+      - docker login --username $DOCKER_USERNAME --password $DOCKER_PASSWORD
+      - IMAGE_URI=public.ecr.aws/q7m2t9t6
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - IMAGE_TAG=build-$(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')
+      - echo COMMIT_HASH - $COMMIT_HASH
+      - echo IMAGE_URI - $IMAGE_URI
+      - echo IMAGE_TAG - $IMAGE_TAG
+      - echo CONTAINER_NAME - $ecs_container_name
+      - aws --version
+      - aws ecr-public get-login-password --region $REGION | docker login --username $USERNAME --password-stdin $IMAGE_URI
   build:
     commands:
       - echo Build started on `date`
@@ -19,6 +34,8 @@ phases:
       - echo Build completed on `date`
       - echo Pushing the Docker images...
       - docker compose -f docker-compose.prod.yml push
+      - printf '[{"name":"app","imageUri":"%s"}]' $IMAGE_REPO:$VERSION > imagedefinitions.json
 artifacts:
   files:
-  - "**/*"
+  - tasksdefinitions.json
+  - imagedefinitions.json

@@ -1,6 +1,6 @@
 services:
   app:
-    image: public.ecr.aws/q7m2t9t6/testing
+    image: $IMAGE_URI/testing:$VERSION
     build:
       context: .
       target: prod
