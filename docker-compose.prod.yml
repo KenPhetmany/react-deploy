@@ -1,6 +1,6 @@
 services:
   app:
-    image: $IMAGE_URI/testing:$VERSION
+    image: $IMAGE_URI:$VERSION
     build:
       context: .
       target: prod
