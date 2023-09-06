@@ -3,8 +3,7 @@ env:
   variables:
     COMMIT_HASH: $(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
     IMAGE_TAG: $(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')
-    IMAGE_REPO: public.ecr.aws/q7m2t9t6/testing
-    IMAGE_URI: public.ecr.aws/q7m2t9t6
+    IMAGE_URI: 575950973345.dkr.ecr.us-east-1.amazonaws.com/react-tester
     VERSION: V7
     REGION : us-east-1
     USERNAME: AWS
@@ -34,7 +33,7 @@ phases:
       - echo Build completed on `date`
       - echo Pushing the Docker images...
       - docker compose -f docker-compose.prod.yml push
-      - printf '[{"name":"app","imageUri":"%s"}]' $IMAGE_REPO:$VERSION > imagedefinitions.json
+      - printf '[{"name":"testContainer","imageUri":"%s"}]' $$IMAGE_URI:$VERSION > imagedefinitions.json
 artifacts:
   files:
   - tasksdefinitions.json
